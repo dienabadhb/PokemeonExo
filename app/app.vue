@@ -7,8 +7,6 @@ const query = ref('')
 const found = ref<WishPokemon | null>(null)
 const error = ref('')
 const loading = ref(false)
-console.log('test')
-debugger
 const list = ref<WishPokemon[]>([])
 const loaded = ref(false)
 
