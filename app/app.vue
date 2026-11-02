@@ -26,6 +26,12 @@ watch(list, (value) => {
   if (loaded.value) localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
 }, { deep: true })
 
+interface PokeApiResponse {
+  id: number
+  name: string
+  sprites: { front_default: string | null }
+}
+
 async function search() {
   error.value = ''
   found.value = null
@@ -34,7 +40,7 @@ async function search() {
 
   loading.value = true
   try {
-    const data = await $fetch<any>(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(q)}`)
+    const data = await $fetch<PokeApiResponse>(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(q)}`)
     found.value = {
       id: data.id,
       name: data.name,
@@ -64,7 +70,7 @@ function remove(id: number) {
     <h1>PokéWishlist</h1>
 
     <form @submit.prevent="search">
-      <input v-model="query" placeholder="Rechercher (ex : pikachu)" />
+      <input v-model="query" placeholder="Rechercher (ex : pikachu)" >
       <button type="submit" :disabled="loading">Rechercher</button>
     </form>
 
@@ -72,7 +78,7 @@ function remove(id: number) {
     <p v-if="error">{{ error }}</p>
 
     <div v-if="found">
-      <img v-if="found.sprite" :src="found.sprite" :alt="found.name" />
+      <img v-if="found.sprite" :src="found.sprite" :alt="found.name" >
       <strong>{{ found.name }}</strong>
       <button @click="add">Ajouter à la wishlist</button>
     </div>
@@ -81,7 +87,7 @@ function remove(id: number) {
     <p v-if="loaded && !list.length">Aucun Pokémon pour l'instant.</p>
     <ul>
       <li v-for="p in list" :key="p.id">
-        <img v-if="p.sprite" :src="p.sprite" :alt="p.name" />
+        <img v-if="p.sprite" :src="p.sprite" :alt="p.name" >
         {{ p.name }}
         <button @click="remove(p.id)">Supprimer</button>
       </li>
