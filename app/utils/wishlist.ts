@@ -25,7 +25,7 @@ export function addPokemon(
   if (list.some((p) => p.id === pokemon.id)) {
     return { list, status: 'duplicate' }
   }
-  if (list.length > MAX_WISHLIST_SIZE) {
+  if (list.length >= MAX_WISHLIST_SIZE) {
     return { list, status: 'full' }
   }
   return { list: [...list, { ...pokemon, addedAt: now }], status: 'added' }
