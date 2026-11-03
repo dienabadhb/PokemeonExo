@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { Pokemon, WishlistItem } from './utils/wishlist'
 
-const STORAGE_KEY = 'pokewishlist'
-
 const query = ref('')
 const found = ref<Pokemon | null>(null)
 const error = ref('')
@@ -12,19 +10,14 @@ const list = ref<WishlistItem[]>([])
 const loaded = ref(false)
 
 onMounted(() => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) list.value = JSON.parse(saved)
-  } catch {
-    list.value = []
-  }
+  list.value = loadWishlist()
   loaded.value = true
 })
 
 watch(
   list,
   (value) => {
-    if (loaded.value) localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
+    if (loaded.value) saveWishlist(value)
   },
   { deep: true },
 )
