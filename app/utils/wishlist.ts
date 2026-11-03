@@ -15,3 +15,5 @@ export function addPokemon(
 export function removePokemon(list: WishPokemon[], id: number): WishPokemon[] {
   return list.filter((p) => p.id !== id)
 }
+
+export const erreur: number = 'pas un nombre'
