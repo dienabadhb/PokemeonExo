@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import type { WishPokemon } from './utils/wishlist'
+import type { Pokemon, WishlistItem } from './utils/wishlist'
+
+interface PokeApiResponse {
+  id: number
+  name: string
+  sprites: { front_default: string | null }
+}
 
 const STORAGE_KEY = 'pokewishlist'
 
 const query = ref('')
-const found = ref<WishPokemon | null>(null)
+const found = ref<Pokemon | null>(null)
 const error = ref('')
+const message = ref('')
 const loading = ref(false)
-const list = ref<WishPokemon[]>([])
+const list = ref<WishlistItem[]>([])
 const loaded = ref(false)
 
-// Charger la liste sauvegardée (côté navigateur uniquement)
 onMounted(() => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -21,7 +27,6 @@ onMounted(() => {
   loaded.value = true
 })
 
-// Sauvegarder à chaque modification
 watch(
   list,
   (value) => {
@@ -30,14 +35,9 @@ watch(
   { deep: true },
 )
 
-interface PokeApiResponse {
-  id: number
-  name: string
-  sprites: { front_default: string | null }
-}
-
 async function search() {
   error.value = ''
+  message.value = ''
   found.value = null
   const q = query.value.trim().toLowerCase()
   if (!q) return
@@ -61,13 +61,19 @@ async function search() {
 
 function add() {
   if (!found.value) return
-  list.value = addPokemon(list.value, found.value)
+  const result = addPokemon(list.value, found.value)
+  list.value = result.list
+  if (result.status === 'duplicate') message.value = 'Déjà dans ta wishlist.'
+  else if (result.status === 'full')
+    message.value = `Wishlist pleine (${MAX_WISHLIST_SIZE} Pokémon maximum).`
+  else message.value = ''
   found.value = null
   query.value = ''
 }
 
 function remove(id: number) {
   list.value = removePokemon(list.value, id)
+  message.value = ''
 }
 </script>
 
@@ -89,7 +95,9 @@ function remove(id: number) {
       <button @click="add">Ajouter à la wishlist</button>
     </div>
 
-    <h2>Ma wishlist ({{ list.length }})</h2>
+    <p v-if="message">{{ message }}</p>
+
+    <h2>Ma wishlist ({{ list.length }}/{{ MAX_WISHLIST_SIZE }})</h2>
     <p v-if="loaded && !list.length">Aucun Pokémon pour l'instant.</p>
     <ul>
       <li v-for="p in list" :key="p.id">
