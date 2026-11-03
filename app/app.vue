@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { Pokemon, WishlistItem } from './utils/wishlist'
 
-
-
 const STORAGE_KEY = 'pokewishlist'
 
 const query = ref('')
@@ -39,7 +37,7 @@ async function search() {
   if (!q) return
 
   loading.value = true
-    try {
+  try {
     found.value = await fetchPokemon(q)
   } catch (e) {
     error.value =
