@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import type { Pokemon, WishlistItem } from './utils/wishlist'
 
-interface PokeApiResponse {
-  id: number
-  name: string
-  sprites: { front_default: string | null }
-}
+
 
 const STORAGE_KEY = 'pokewishlist'
 
@@ -43,17 +39,13 @@ async function search() {
   if (!q) return
 
   loading.value = true
-  try {
-    const data = await $fetch<PokeApiResponse>(
-      `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(q)}`,
-    )
-    found.value = {
-      id: data.id,
-      name: data.name,
-      sprite: data.sprites.front_default,
-    }
-  } catch {
-    error.value = `Pokémon « ${query.value} » introuvable (utilise le nom anglais : pikachu, charmander...)`
+    try {
+    found.value = await fetchPokemon(q)
+  } catch (e) {
+    error.value =
+      e instanceof PokemonNotFoundError
+        ? `Pokémon « ${query.value} » introuvable (utilise le nom anglais : pikachu, charmander...)`
+        : 'Erreur de connexion à PokéAPI, réessaie plus tard.'
   } finally {
     loading.value = false
   }
