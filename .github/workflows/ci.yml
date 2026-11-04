@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: dienabadhb/pokewishlist-api
-          ref: main
+          ref: feat/break-response
           path: pokewishlist-api
       - uses: actions/setup-node@v4
         with:
