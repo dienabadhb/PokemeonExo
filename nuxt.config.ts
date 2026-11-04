@@ -3,4 +3,9 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  runtimeConfig: {
+    public: {
+      apiBase: 'http://localhost:3001',
+    },
+  },
 })

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Pokemon, WishlistItem } from './utils/wishlist'
 
+const apiBase = useRuntimeConfig().public.apiBase
+
 const query = ref('')
 const found = ref<Pokemon | null>(null)
 const error = ref('')
@@ -9,18 +11,16 @@ const loading = ref(false)
 const list = ref<WishlistItem[]>([])
 const loaded = ref(false)
 
-onMounted(() => {
-  list.value = loadWishlist()
+const API_DOWN = "L'API est injoignable. Est-elle démarrée ?"
+
+onMounted(async () => {
+  try {
+    list.value = await getWishlist(apiBase)
+  } catch {
+    message.value = API_DOWN
+  }
   loaded.value = true
 })
-
-watch(
-  list,
-  (value) => {
-    if (loaded.value) saveWishlist(value)
-  },
-  { deep: true },
-)
 
 async function search() {
   error.value = ''
@@ -42,21 +42,27 @@ async function search() {
   }
 }
 
-function add() {
+async function add() {
   if (!found.value) return
-  const result = addPokemon(list.value, found.value)
-  list.value = result.list
-  if (result.status === 'duplicate') message.value = 'Déjà dans ta wishlist.'
-  else if (result.status === 'full')
-    message.value = `Wishlist pleine (${MAX_WISHLIST_SIZE} Pokémon maximum).`
-  else message.value = ''
-  found.value = null
-  query.value = ''
+  message.value = ''
+  try {
+    const item = await addToWishlist(apiBase, found.value)
+    list.value = [...list.value, item]
+    found.value = null
+    query.value = ''
+  } catch (e) {
+    message.value = e instanceof ApiError ? e.message : API_DOWN
+  }
 }
 
-function remove(id: number) {
-  list.value = removePokemon(list.value, id)
+async function remove(id: number) {
   message.value = ''
+  try {
+    await removeFromWishlist(apiBase, id)
+    list.value = list.value.filter((p) => p.id !== id)
+  } catch (e) {
+    message.value = e instanceof ApiError ? e.message : API_DOWN
+  }
 }
 </script>
 
