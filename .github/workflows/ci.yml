@@ -64,3 +64,61 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+
+  e2e:
+    name: E2E Playwright
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: dienabadhb/pokewishlist-api
+          ref: main
+          path: pokewishlist-api
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            pokewishlist-api/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: pokewishlist-api
+      - run: npx playwright install --with-deps chromium
+
+      - name: Démarrer l'API Hono (port 3001)
+        working-directory: pokewishlist-api
+        run: npm start > ../api.log 2>&1 &
+
+      - name: Démarrer Nuxt (port 3000)
+        run: npm run dev > nuxt.log 2>&1 &
+
+      - name: Attendre les deux serveurs
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3001/health && break
+            sleep 2
+          done
+          curl -sf http://localhost:3001/health
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000 > /dev/null && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000 > /dev/null
+
+      - run: npm run e2e
+        env:
+          CI: true
+
+      - name: Logs des serveurs (en cas d'échec)
+        if: failure()
+        run: |
+          echo "=== API ===" && cat api.log
+          echo "=== NUXT ===" && cat nuxt.log
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
