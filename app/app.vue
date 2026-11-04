@@ -9,7 +9,6 @@ const loading = ref(false)
 const list = ref<WishlistItem[]>([])
 const loaded = ref(false)
 
-
 onMounted(() => {
   list.value = loadWishlist()
   loaded.value = true
