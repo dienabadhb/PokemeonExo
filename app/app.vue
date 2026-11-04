@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Pokemon, WishlistItem } from './utils/wishlist'
+import { truc } from './utils/inexistant'
 
 const query = ref('')
 const found = ref<Pokemon | null>(null)
